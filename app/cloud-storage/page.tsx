@@ -1,965 +1,568 @@
 "use client"
 
-import { useState, useRef, useEffect, type ChangeEvent } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import {
-  File,
+  Cloud,
   Film,
-  Folder,
-  Grid,
-  List,
-  Plus,
-  Search,
-  Upload,
   Users,
+  Settings,
+  LogOut,
+  Search,
+  ChevronDown,
+  LayoutDashboard,
+  FolderPlus,
+  Upload,
+  MoreVertical,
+  Folder,
+  File,
+  ImageIcon,
+  FileText,
+  FileVideo,
+  FileAudio,
+  Share2,
   Download,
   Trash2,
-  Share2,
-  MoreVertical,
-  Music,
-  FileText,
-  ImageIcon,
-  AlertCircle,
+  Lock,
+  Eye,
+  Grid,
+  List,
+  Filter,
+  ArrowUpDown,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Progress } from "@/components/ui/progress"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import { toast } from "@/components/ui/use-toast"
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Badge } from "@/components/ui/badge"
 
-interface FileItem {
-  id: string
-  name: string
-  type: string
-  size: number
-  url: string
-  folderId?: string
-  isShared: boolean
-  sharedWith: string[]
-  createdAt: string
-  updatedAt: string
-}
+// Mock data for files and folders
+const mockFolders = [
+  { id: "1", name: "Documents", files: 15, size: "2.4 GB", lastModified: "2023-06-10T14:30:00Z" },
+  { id: "2", name: "Images", files: 42, size: "1.8 GB", lastModified: "2023-06-08T09:15:00Z" },
+  { id: "3", name: "Videos", files: 8, size: "5.2 GB", lastModified: "2023-06-05T16:45:00Z" },
+  { id: "4", name: "Projects", files: 23, size: "3.1 GB", lastModified: "2023-06-01T11:20:00Z" },
+]
 
-interface FolderItem {
-  id: string
-  name: string
-  parentId?: string
-  createdAt: string
-  updatedAt: string
-}
-
-interface User {
-  id: string
-  name: string
-  email: string
-  storageUsed: number
-  storageLimit: number
-}
-
-// Mock initial data
-const initialFiles: FileItem[] = [
+const mockFiles = [
   {
-    id: "file1",
-    name: "Project Presentation.pptx",
+    id: "1",
+    name: "Presentation.pptx",
+    type: "presentation",
+    size: "2.4 MB",
+    lastModified: "2023-06-10T14:30:00Z",
+    shared: false,
+    encrypted: true,
+  },
+  {
+    id: "2",
+    name: "Report.pdf",
     type: "document",
-    size: 2.4 * 1024 * 1024,
-    url: "/files/presentation.pptx",
-    isShared: false,
-    sharedWith: [],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    size: "1.8 MB",
+    lastModified: "2023-06-08T09:15:00Z",
+    shared: true,
+    encrypted: true,
   },
   {
-    id: "file2",
-    name: "Company Logo.png",
+    id: "3",
+    name: "Profile.jpg",
     type: "image",
-    size: 0.8 * 1024 * 1024,
-    url: "/files/logo.png",
-    isShared: true,
-    sharedWith: ["user2@example.com"],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    size: "0.8 MB",
+    lastModified: "2023-06-05T16:45:00Z",
+    shared: false,
+    encrypted: false,
   },
   {
-    id: "file3",
-    name: "Product Demo.mp4",
+    id: "4",
+    name: "Tutorial.mp4",
     type: "video",
-    size: 15 * 1024 * 1024,
-    url: "/files/demo.mp4",
-    isShared: false,
-    sharedWith: [],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    size: "15.2 MB",
+    lastModified: "2023-06-01T11:20:00Z",
+    shared: true,
+    encrypted: true,
+  },
+  {
+    id: "5",
+    name: "Song.mp3",
+    type: "audio",
+    size: "3.5 MB",
+    lastModified: "2023-05-28T08:10:00Z",
+    shared: false,
+    encrypted: false,
+  },
+  {
+    id: "6",
+    name: "Notes.txt",
+    type: "text",
+    size: "0.1 MB",
+    lastModified: "2023-05-25T15:30:00Z",
+    shared: false,
+    encrypted: true,
   },
 ]
 
-const initialFolders: FolderItem[] = [
-  {
-    id: "folder1",
-    name: "Documents",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "folder2",
-    name: "Images",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "folder3",
-    name: "Videos",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-]
+// Helper function to get the appropriate icon for a file type
+const getFileIcon = (type: string) => {
+  switch (type) {
+    case "document":
+      return <FileText className="h-10 w-10 text-blue-500" />
+    case "presentation":
+      return <FileText className="h-10 w-10 text-orange-500" />
+    case "image":
+      return <ImageIcon className="h-10 w-10 text-green-500" />
+    case "video":
+      return <FileVideo className="h-10 w-10 text-purple-500" />
+    case "audio":
+      return <FileAudio className="h-10 w-10 text-pink-500" />
+    case "text":
+      return <File className="h-10 w-10 text-gray-500" />
+    default:
+      return <File className="h-10 w-10 text-gray-500" />
+  }
+}
+
+// Format date to a readable format
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString)
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  })
+}
 
 export default function CloudStoragePage() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [currentFolder, setCurrentFolder] = useState("root")
-  const [folderPath, setFolderPath] = useState<{ id: string; name: string }[]>([{ id: "root", name: "My Files" }])
-  const [newFolderName, setNewFolderName] = useState("")
-  const [isCreatingFolder, setIsCreatingFolder] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState(0)
-  const [isUploading, setIsUploading] = useState(false)
-  const [selectedFiles, setSelectedFiles] = useState<string[]>([])
-  const [showShareDialog, setShowShareDialog] = useState(false)
-  const [shareEmail, setShareEmail] = useState("")
-  const [sharePermission, setSharePermission] = useState("view")
-  const [files, setFiles] = useState<FileItem[]>(initialFiles)
-  const [folders, setFolders] = useState<FolderItem[]>(initialFolders)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [user, setUser] = useState<User | null>(null)
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  const [sortBy, setSortBy] = useState("name")
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
 
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  // Filter files based on search query
+  const filteredFiles = mockFiles.filter((file) => file.name.toLowerCase().includes(searchQuery.toLowerCase()))
 
-  // Mock user authentication
-  useEffect(() => {
-    // In a real app, this would check for authentication
-    setUser({
-      id: "mock-user-id",
-      name: "Test User",
-      email: "user@example.com",
-      storageUsed: 500 * 1024 * 1024, // 500 MB
-      storageLimit: 2 * 1024 * 1024 * 1024 * 1024, // 2 TB
-    })
-  }, [])
-
-  // Format file size
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes"
-
-    const k = 1024
-    const sizes = ["Bytes", "KB", "MB", "GB", "TB"]
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-
-    return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
-  }
-
-  // Filter files and folders based on search query
-  const filteredFiles = files.filter((file) => file.name.toLowerCase().includes(searchQuery.toLowerCase()))
-  const filteredFolders = folders.filter((folder) => folder.name.toLowerCase().includes(searchQuery.toLowerCase()))
-
-  // Handle file upload
-  const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = e.target.files
-    if (!selectedFiles || selectedFiles.length === 0 || !user) return
-
-    setIsUploading(true)
-    setUploadProgress(0)
-
-    // Simulate upload progress
-    const interval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval)
-          return 100
-        }
-        return prev + 5
-      })
-    }, 200)
-
-    // Process each file
-    Array.from(selectedFiles).forEach(async (file, index) => {
-      try {
-        // Determine file type
-        let fileType = "other"
-        if (file.type.startsWith("video/")) fileType = "video"
-        else if (file.type.startsWith("image/")) fileType = "image"
-        else if (file.type.startsWith("audio/")) fileType = "audio"
-        else if (
-          file.type.includes("document") ||
-          file.type.includes("pdf") ||
-          file.type.includes("text") ||
-          file.name.endsWith(".doc") ||
-          file.name.endsWith(".docx") ||
-          file.name.endsWith(".pdf") ||
-          file.name.endsWith(".txt")
-        )
-          fileType = "document"
-
-        // In a real app, this would upload the file to a storage service
-        // and get a URL back
-        const fileUrl = `/files/${file.name}`
-
-        // Create new file object
-        const newFile: FileItem = {
-          id: `file${Date.now()}${index}`,
-          name: file.name,
-          type: fileType,
-          size: file.size,
-          url: fileUrl,
-          folderId: currentFolder === "root" ? undefined : currentFolder,
-          isShared: false,
-          sharedWith: [],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }
-
-        // Add file to state
-        setFiles((prev) => [...prev, newFile])
-
-        // Update user storage used
-        if (user) {
-          setUser({
-            ...user,
-            storageUsed: user.storageUsed + file.size,
-          })
-        }
-
-        // If this is the last file, finish upload
-        if (index === selectedFiles.length - 1) {
-          setTimeout(() => {
-            setIsUploading(false)
-            setUploadProgress(0)
-
-            // Reset file input
-            if (fileInputRef.current) {
-              fileInputRef.current.value = ""
-            }
-
-            toast({
-              title: "Files uploaded successfully",
-              description: `${selectedFiles.length} file(s) uploaded to ${currentFolder === "root" ? "My Files" : folderPath[folderPath.length - 1].name}`,
-            })
-          }, 500)
-        }
-      } catch (err) {
-        console.error("Error uploading file:", err)
-        setIsUploading(false)
-
-        toast({
-          title: "Upload failed",
-          description: `Failed to upload ${file.name}. Please try again.`,
-          variant: "destructive",
-        })
-
-        // Reset file input
-        if (fileInputRef.current) {
-          fileInputRef.current.value = ""
-        }
-      }
-    })
-  }
-
-  // Handle folder navigation
-  const navigateToFolder = async (folderId: string, folderName: string) => {
-    setCurrentFolder(folderId)
-
-    // Update folder path
-    if (folderId === "root") {
-      setFolderPath([{ id: "root", name: "My Files" }])
-    } else {
-      const folderIndex = folderPath.findIndex((f) => f.id === folderId)
-
-      if (folderIndex >= 0) {
-        // If folder is already in path, truncate to that point
-        setFolderPath(folderPath.slice(0, folderIndex + 1))
-      } else {
-        // Add folder to path
-        setFolderPath([...folderPath, { id: folderId, name: folderName }])
-      }
+  // Sort files based on sort criteria
+  const sortedFiles = [...filteredFiles].sort((a, b) => {
+    if (sortBy === "name") {
+      return sortOrder === "asc" ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
+    } else if (sortBy === "size") {
+      const aSize = Number.parseFloat(a.size.split(" ")[0])
+      const bSize = Number.parseFloat(b.size.split(" ")[0])
+      return sortOrder === "asc" ? aSize - bSize : bSize - aSize
+    } else if (sortBy === "date") {
+      const aDate = new Date(a.lastModified).getTime()
+      const bDate = new Date(b.lastModified).getTime()
+      return sortOrder === "asc" ? aDate - bDate : bDate - aDate
     }
-  }
-
-  // Create new folder
-  const createNewFolder = async () => {
-    if (!newFolderName.trim() || !user) return
-
-    try {
-      // Create new folder object
-      const newFolder: FolderItem = {
-        id: `folder${Date.now()}`,
-        name: newFolderName,
-        parentId: currentFolder === "root" ? undefined : currentFolder,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
-
-      // Add folder to state
-      setFolders([newFolder, ...folders])
-      setNewFolderName("")
-      setIsCreatingFolder(false)
-
-      toast({
-        title: "Folder created",
-        description: `Folder "${newFolderName}" created successfully`,
-      })
-    } catch (err) {
-      console.error("Error creating folder:", err)
-
-      toast({
-        title: "Failed to create folder",
-        description: "An error occurred while creating the folder. Please try again.",
-        variant: "destructive",
-      })
-    }
-  }
-
-  // Handle file selection
-  const toggleFileSelection = (fileId: string) => {
-    setSelectedFiles((prev) => {
-      if (prev.includes(fileId)) {
-        return prev.filter((id) => id !== fileId)
-      } else {
-        return [...prev, fileId]
-      }
-    })
-  }
-
-  // Delete selected files
-  const deleteSelectedFiles = async () => {
-    if (!user || selectedFiles.length === 0) return
-
-    try {
-      // Remove files from state
-      const filesToDelete = files.filter((file) => selectedFiles.includes(file.id))
-      setFiles(files.filter((file) => !selectedFiles.includes(file.id)))
-
-      // Update user storage used
-      const spaceFreed = filesToDelete.reduce((total, file) => total + file.size, 0)
-      setUser({
-        ...user,
-        storageUsed: Math.max(0, user.storageUsed - spaceFreed),
-      })
-
-      setSelectedFiles([])
-
-      toast({
-        title: "Files deleted",
-        description: `${filesToDelete.length} file(s) deleted successfully`,
-      })
-    } catch (err) {
-      console.error("Error deleting files:", err)
-
-      toast({
-        title: "Failed to delete files",
-        description: "An error occurred while deleting the files. Please try again.",
-        variant: "destructive",
-      })
-    }
-  }
-
-  // Download file
-  const downloadFile = (fileId: string) => {
-    const file = files.find((f) => f.id === fileId)
-    if (!file) return
-
-    // In a real app, this would trigger a download from the storage service
-    toast({
-      title: "Download started",
-      description: `Downloading ${file.name}...`,
-    })
-  }
-
-  // Share file
-  const shareFile = async () => {
-    if (!shareEmail.trim() || selectedFiles.length === 0 || !user) return
-
-    try {
-      // Update files with sharing information
-      setFiles(
-        files.map((file) => {
-          if (selectedFiles.includes(file.id)) {
-            return {
-              ...file,
-              isShared: true,
-              sharedWith: [...file.sharedWith, shareEmail],
-            }
-          }
-          return file
-        }),
-      )
-
-      toast({
-        title: "Files shared",
-        description: `${selectedFiles.length} file(s) shared with ${shareEmail} (${sharePermission} permission)`,
-      })
-
-      setShowShareDialog(false)
-      setShareEmail("")
-    } catch (err) {
-      console.error("Error sharing files:", err)
-
-      toast({
-        title: "Failed to share files",
-        description: "An error occurred while sharing the files. Please try again.",
-        variant: "destructive",
-      })
-    }
-  }
-
-  // Get icon for file type
-  const getFileIcon = (type: string) => {
-    switch (type) {
-      case "folder":
-        return <Folder className="h-12 w-12 text-blue-500" />
-      case "video":
-        return <Film className="h-12 w-12 text-purple-500" />
-      case "document":
-        return <FileText className="h-12 w-12 text-green-500" />
-      case "image":
-        return <ImageIcon className="h-12 w-12 text-pink-500" />
-      case "audio":
-        return <Music className="h-12 w-12 text-yellow-500" />
-      default:
-        return <File className="h-12 w-12 text-gray-500" />
-    }
-  }
-
-  // Calculate storage percentage
-  const storagePercentage = user ? (user.storageUsed / user.storageLimit) * 100 : 0
-
-  // Combined items for display
-  const combinedItems = [
-    ...filteredFolders.map((folder) => ({
-      ...folder,
-      type: "folder" as const,
-      size: 0,
-      items: 0, // In a real app, this would be the count of items in the folder
-    })),
-    ...filteredFiles,
-  ]
+    return 0
+  })
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between">
+    <div className="flex min-h-screen">
+      {/* Sidebar */}
+      <div className="hidden md:flex w-64 flex-col bg-background border-r">
+        <div className="flex h-16 items-center border-b px-6">
           <div className="flex items-center gap-2 font-bold text-xl">
-            <Film className="h-6 w-6" />
-            <span>BLACKENSYS</span>
+            <Cloud className="h-6 w-6 text-primary" />
+            <span>Cloud Storage</span>
           </div>
-          <nav className="hidden md:flex gap-6">
-            <Link href="/dashboard" className="text-sm font-medium hover:underline underline-offset-4">
-              Dashboard
+        </div>
+        <div className="flex-1 overflow-auto py-2">
+          <nav className="grid gap-1 px-2">
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              <span>Dashboard</span>
             </Link>
-            <Link href="/videos" className="text-sm font-medium hover:underline underline-offset-4">
-              My Videos
+            <Link
+              href="/videos"
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+            >
+              <Film className="h-4 w-4" />
+              <span>My Videos</span>
             </Link>
             <Link
               href="/cloud-storage"
-              className="text-sm font-medium hover:underline underline-offset-4 text-primary font-bold"
+              className="flex items-center gap-3 rounded-lg bg-primary/10 px-3 py-2 text-primary transition-all hover:text-primary"
             >
-              Cloud Storage
+              <Cloud className="h-4 w-4" />
+              <span>Cloud Storage</span>
             </Link>
-            <Link href="/shorts" className="text-sm font-medium hover:underline underline-offset-4">
-              Shorts
+            <Link
+              href="/account"
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+            >
+              <Users className="h-4 w-4" />
+              <span>Account</span>
             </Link>
-            <Link href="/analytics" className="text-sm font-medium hover:underline underline-offset-4">
-              Analytics
+            <Link
+              href="/settings"
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+            >
+              <Settings className="h-4 w-4" />
+              <span>Settings</span>
             </Link>
           </nav>
-          <div className="flex items-center gap-4">
-            <Button variant="outline" size="icon" asChild>
-              <Link href="/account">
-                <Users className="h-4 w-4" />
-                <span className="sr-only">Account</span>
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </header>
-      <main className="flex-1 p-4 md:p-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Cloud Storage</h1>
-            <p className="text-muted-foreground">Manage your files and folders</p>
-          </div>
-          <div className="flex items-center gap-2 mt-4 md:mt-0">
-            <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" multiple />
-            <Button onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
-              <Upload className="mr-2 h-4 w-4" />
-              Upload Files
-            </Button>
-            <Dialog open={isCreatingFolder} onOpenChange={setIsCreatingFolder}>
-              <DialogTrigger asChild>
-                <Button variant="outline">
-                  <Folder className="mr-2 h-4 w-4" />
-                  New Folder
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Create New Folder</DialogTitle>
-                  <DialogDescription>Enter a name for your new folder.</DialogDescription>
-                </DialogHeader>
-                <div className="py-4">
-                  <Input
-                    placeholder="Folder name"
-                    value={newFolderName}
-                    onChange={(e) => setNewFolderName(e.target.value)}
-                  />
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsCreatingFolder(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={createNewFolder}>Create</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </div>
 
-        {/* Upload Progress */}
-        {isUploading && (
-          <div className="mb-6">
-            <div className="flex justify-between mb-1">
-              <span className="text-sm font-medium">Uploading files...</span>
-              <span className="text-sm font-medium">{uploadProgress}%</span>
+          <div className="mt-6 px-3">
+            <h3 className="mb-2 text-sm font-medium">Storage</h3>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">12.5 GB of 50 GB used</span>
+                <span className="text-sm font-medium">25%</span>
+              </div>
+              <Progress value={25} className="h-2" />
             </div>
-            <Progress value={uploadProgress} className="h-2" />
+            <Button variant="outline" size="sm" className="mt-4 w-full">
+              Upgrade Storage
+            </Button>
           </div>
-        )}
 
-        {/* Selected Files Actions */}
-        {selectedFiles.length > 0 && (
-          <div className="mb-6 p-3 bg-muted rounded-md flex items-center justify-between">
-            <span className="text-sm font-medium">{selectedFiles.length} item(s) selected</span>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => setSelectedFiles([])}>
-                Cancel
+          <div className="mt-6 px-3">
+            <h3 className="mb-2 text-sm font-medium">Quick Access</h3>
+            <div className="space-y-1">
+              <Button variant="ghost" size="sm" className="w-full justify-start">
+                <FileText className="mr-2 h-4 w-4 text-blue-500" />
+                Documents
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setShowShareDialog(true)}>
-                <Share2 className="mr-1 h-4 w-4" />
-                Share
+              <Button variant="ghost" size="sm" className="w-full justify-start">
+                <ImageIcon className="mr-2 h-4 w-4 text-green-500" />
+                Images
               </Button>
-              <Button variant="outline" size="sm" onClick={deleteSelectedFiles}>
-                <Trash2 className="mr-1 h-4 w-4" />
-                Delete
+              <Button variant="ghost" size="sm" className="w-full justify-start">
+                <FileVideo className="mr-2 h-4 w-4 text-purple-500" />
+                Videos
+              </Button>
+              <Button variant="ghost" size="sm" className="w-full justify-start">
+                <Share2 className="mr-2 h-4 w-4 text-amber-500" />
+                Shared with me
+              </Button>
+              <Button variant="ghost" size="sm" className="w-full justify-start">
+                <Lock className="mr-2 h-4 w-4 text-red-500" />
+                Encrypted
               </Button>
             </div>
           </div>
-        )}
+        </div>
+        <div className="mt-auto border-t p-4">
+          <div className="flex items-center gap-3 py-2">
+            <Avatar className="h-9 w-9">
+              <AvatarImage src="/placeholder.svg?height=36&width=36&text=U" alt="User" />
+              <AvatarFallback>U</AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col">
+              <span className="text-sm font-medium">John Doe</span>
+              <span className="text-xs text-muted-foreground">john@example.com</span>
+            </div>
+            <Button variant="ghost" size="icon" className="ml-auto">
+              <LogOut className="h-4 w-4" />
+              <span className="sr-only">Log out</span>
+            </Button>
+          </div>
+        </div>
+      </div>
 
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card className="md:col-span-1">
-            <CardHeader>
-              <CardTitle>Storage</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm font-medium">Used Space</span>
-                  <span className="text-sm font-medium">
-                    {user ? formatFileSize(user.storageUsed) : "0 B"} /{" "}
-                    {user ? formatFileSize(user.storageLimit) : "0 B"}
-                  </span>
-                </div>
-                <Progress value={storagePercentage} className="h-2" />
-              </div>
-
-              <div className="space-y-2">
-                <Button
-                  variant={currentFolder === "root" ? "default" : "outline"}
-                  className="w-full justify-start"
-                  onClick={() => navigateToFolder("root", "My Files")}
-                >
-                  <Folder className="mr-2 h-4 w-4" />
-                  All Files
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <Film className="mr-2 h-4 w-4" />
-                  Videos
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <FileText className="mr-2 h-4 w-4" />
-                  Documents
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <ImageIcon className="mr-2 h-4 w-4" />
-                  Images
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <Music className="mr-2 h-4 w-4" />
-                  Audio
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <Share2 className="mr-2 h-4 w-4" />
-                  Shared with me
-                </Button>
-              </div>
-
-              <div>
-                <h3 className="text-sm font-medium mb-2">Recent Folders</h3>
-                <div className="space-y-2">
-                  {folders.slice(0, 3).map((folder) => (
-                    <div
-                      key={folder.id}
-                      className="flex items-center p-2 rounded-md hover:bg-muted cursor-pointer"
-                      onClick={() => navigateToFolder(folder.id, folder.name)}
-                    >
-                      <Folder className="mr-2 h-4 w-4 text-blue-500" />
-                      <span className="text-sm">{folder.name}</span>
-                    </div>
-                  ))}
-                  {folders.length === 0 && <div className="text-sm text-muted-foreground p-2">No folders yet</div>}
-                </div>
-              </div>
-
-              <div>
-                <Button variant="outline" className="w-full">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Upgrade Storage
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="md:col-span-3 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="relative w-full max-w-sm">
+      {/* Main Content */}
+      <div className="flex flex-1 flex-col">
+        {/* Header */}
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-6">
+          <Button variant="outline" size="icon" className="md:hidden">
+            <ChevronDown className="h-4 w-4" />
+            <span className="sr-only">Toggle Menu</span>
+          </Button>
+          <div className="w-full flex-1">
+            <form>
+              <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="search"
                   placeholder="Search files and folders..."
-                  className="w-full pl-8"
+                  className="w-full appearance-none bg-background pl-8 shadow-none md:w-2/3 lg:w-1/3"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              <Tabs defaultValue="grid" className="ml-auto">
+            </form>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="icon" onClick={() => setViewMode("grid")}>
+              <Grid className={`h-4 w-4 ${viewMode === "grid" ? "text-primary" : "text-muted-foreground"}`} />
+              <span className="sr-only">Grid View</span>
+            </Button>
+            <Button variant="outline" size="icon" onClick={() => setViewMode("list")}>
+              <List className={`h-4 w-4 ${viewMode === "list" ? "text-primary" : "text-muted-foreground"}`} />
+              <span className="sr-only">List View</span>
+            </Button>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="flex-1 overflow-auto p-6">
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">My Files</h1>
+                <p className="text-muted-foreground">Manage your files and folders</p>
+              </div>
+              <div className="flex gap-2">
+                <Button>
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload
+                </Button>
+                <Button variant="outline">
+                  <FolderPlus className="mr-2 h-4 w-4" />
+                  New Folder
+                </Button>
+              </div>
+            </div>
+
+            {/* Filters and Sorting */}
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+              <Tabs defaultValue="all" className="w-full sm:w-auto">
                 <TabsList>
-                  <TabsTrigger value="grid">
-                    <Grid className="h-4 w-4" />
-                  </TabsTrigger>
-                  <TabsTrigger value="list">
-                    <List className="h-4 w-4" />
-                  </TabsTrigger>
+                  <TabsTrigger value="all">All Files</TabsTrigger>
+                  <TabsTrigger value="recent">Recent</TabsTrigger>
+                  <TabsTrigger value="shared">Shared</TabsTrigger>
+                  <TabsTrigger value="encrypted">Encrypted</TabsTrigger>
                 </TabsList>
               </Tabs>
-            </div>
-
-            {/* Folder Path */}
-            <div className="flex items-center gap-1 text-sm">
-              {folderPath.map((folder, index) => (
-                <div key={folder.id} className="flex items-center">
-                  {index > 0 && <span className="mx-1">/</span>}
-                  <button
-                    className={`hover:underline ${
-                      index === folderPath.length - 1 ? "font-medium" : "text-muted-foreground"
-                    }`}
-                    onClick={() => navigateToFolder(folder.id, folder.name)}
-                  >
-                    {folder.name}
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>{currentFolder === "root" ? "My Files" : folderPath[folderPath.length - 1].name}</CardTitle>
-                <CardDescription>
-                  {searchQuery
-                    ? `Search results for "${searchQuery}"`
-                    : `${combinedItems.length} item(s) in this folder`}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <div className="py-8 text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mx-auto"></div>
-                    <p className="mt-2  text-sm text-muted-foreground">Loading files and folders...</p>
-                  </div>
-                ) : error ? (
-                  <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                ) : (
-                  <Tabs defaultValue="grid" className="w-full">
-                    <TabsContent value="grid" className="mt-0">
-                      {combinedItems.length === 0 ? (
-                        <div className="py-8 text-center">
-                          <Alert>
-                            <AlertCircle className="h-4 w-4" />
-                            <AlertDescription>
-                              {searchQuery ? "No files match your search" : "This folder is empty"}
-                            </AlertDescription>
-                          </Alert>
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                          {combinedItems.map((item) => (
-                            <div
-                              key={item.id}
-                              className={`border rounded-md p-3 hover:bg-muted cursor-pointer relative ${
-                                selectedFiles.includes(item.id) ? "bg-primary/10 border-primary" : ""
-                              }`}
-                              onClick={() =>
-                                item.type === "folder"
-                                  ? navigateToFolder(item.id, item.name)
-                                  : toggleFileSelection(item.id)
-                              }
-                            >
-                              {item.type !== "folder" && (
-                                <div className="absolute top-2 right-2">
-                                  <Checkbox
-                                    checked={selectedFiles.includes(item.id)}
-                                    onCheckedChange={() => toggleFileSelection(item.id)}
-                                    onClick={(e) => e.stopPropagation()}
-                                  />
-                                </div>
-                              )}
-                              <div className="flex flex-col items-center text-center">
-                                {getFileIcon(item.type)}
-                                <span className="text-sm font-medium truncate w-full mt-2">{item.name}</span>
-                                <span className="text-xs text-muted-foreground">
-                                  {item.type === "folder" ? `${item.items} items` : formatFileSize(item.size)}
-                                </span>
-                              </div>
-                              {item.type !== "folder" && (
-                                <div className="absolute bottom-2 right-2">
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                                        <MoreVertical className="h-4 w-4" />
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                      <DropdownMenuItem onClick={() => downloadFile(item.id)}>
-                                        <Download className="mr-2 h-4 w-4" />
-                                        Download
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem
-                                        onClick={() => {
-                                          setSelectedFiles([item.id])
-                                          setShowShareDialog(true)
-                                        }}
-                                      >
-                                        <Share2 className="mr-2 h-4 w-4" />
-                                        Share
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem
-                                        className="text-destructive"
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          setSelectedFiles([item.id])
-                                          deleteSelectedFiles()
-                                        }}
-                                      >
-                                        <Trash2 className="mr-2 h-4 w-4" />
-                                        Delete
-                                      </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </TabsContent>
-
-                    <TabsContent value="list" className="mt-0">
-                      {combinedItems.length === 0 ? (
-                        <div className="py-8 text-center">
-                          <Alert>
-                            <AlertCircle className="h-4 w-4" />
-                            <AlertDescription>
-                              {searchQuery ? "No files match your search" : "This folder is empty"}
-                            </AlertDescription>
-                          </Alert>
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          {combinedItems.map((item) => (
-                            <div
-                              key={item.id}
-                              className={`flex items-center justify-between p-2 rounded-md hover:bg-muted cursor-pointer ${
-                                selectedFiles.includes(item.id) ? "bg-primary/10" : ""
-                              }`}
-                              onClick={() =>
-                                item.type === "folder"
-                                  ? navigateToFolder(item.id, item.name)
-                                  : toggleFileSelection(item.id)
-                              }
-                            >
-                              <div className="flex items-center flex-1">
-                                {item.type !== "folder" && (
-                                  <Checkbox
-                                    checked={selectedFiles.includes(item.id)}
-                                    onCheckedChange={() => toggleFileSelection(item.id)}
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="mr-2"
-                                  />
-                                )}
-                                {item.type === "folder" && (
-                                  <div className="w-5 h-5 mr-2"></div> // Spacer for alignment
-                                )}
-                                <div className="mr-3">
-                                  {item.type === "folder" ? (
-                                    <Folder className="h-5 w-5 text-blue-500" />
-                                  ) : item.type === "video" ? (
-                                    <Film className="h-5 w-5 text-purple-500" />
-                                  ) : item.type === "document" ? (
-                                    <FileText className="h-5 w-5 text-green-500" />
-                                  ) : item.type === "image" ? (
-                                    <ImageIcon className="h-5 w-5 text-pink-500" />
-                                  ) : item.type === "audio" ? (
-                                    <Music className="h-5 w-5 text-yellow-500" />
-                                  ) : (
-                                    <File className="h-5 w-5 text-gray-500" />
-                                  )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium truncate">{item.name}</p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {item.type === "folder" ? `${item.items} items` : formatFileSize(item.size)}
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <div className="text-xs text-muted-foreground">
-                                  {new Date(item.createdAt).toLocaleDateString()}
-                                </div>
-                                {item.type !== "folder" && (
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                                        <MoreVertical className="h-4 w-4" />
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                      <DropdownMenuItem onClick={() => downloadFile(item.id)}>
-                                        <Download className="mr-2 h-4 w-4" />
-                                        Download
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem
-                                        onClick={() => {
-                                          setSelectedFiles([item.id])
-                                          setShowShareDialog(true)
-                                        }}
-                                      >
-                                        <Share2 className="mr-2 h-4 w-4" />
-                                        Share
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem
-                                        className="text-destructive"
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          setSelectedFiles([item.id])
-                                          deleteSelectedFiles()
-                                        }}
-                                      >
-                                        <Trash2 className="mr-2 h-4 w-4" />
-                                        Delete
-                                      </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </TabsContent>
-                  </Tabs>
-                )}
-              </CardContent>
-              <CardFooter>
-                <Button variant="outline" className="w-full">
-                  Load More
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-[120px]">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="name">Name</SelectItem>
+                    <SelectItem value="size">Size</SelectItem>
+                    <SelectItem value="date">Date</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                >
+                  <ArrowUpDown className="h-4 w-4" />
                 </Button>
-              </CardFooter>
-            </Card>
-          </div>
-        </div>
-      </main>
+                <Button variant="outline" size="icon">
+                  <Filter className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
 
-      {/* Share Dialog */}
-      <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Share Files</DialogTitle>
-            <DialogDescription>Share selected files with others by email.</DialogDescription>
-          </DialogHeader>
-          <div className="py-4 space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="colleague@example.com"
-                value={shareEmail}
-                onChange={(e) => setShareEmail(e.target.value)}
-              />
+            {/* Folders */}
+            <div>
+              <h2 className="text-lg font-semibold mb-4">Folders</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {mockFolders.map((folder) => (
+                  <Card key={folder.id} className="overflow-hidden">
+                    <CardContent className="p-0">
+                      <div className="p-6">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start gap-4">
+                            <Folder className="h-10 w-10 text-primary" />
+                            <div>
+                              <h3 className="font-medium">{folder.name}</h3>
+                              <p className="text-sm text-muted-foreground">
+                                {folder.files} files • {folder.size}
+                              </p>
+                            </div>
+                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreVertical className="h-4 w-4" />
+                                <span className="sr-only">More</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuItem>
+                                <Eye className="mr-2 h-4 w-4" />
+                                Open
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <Share2 className="mr-2 h-4 w-4" />
+                                Share
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem>
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </div>
+                      <div className="bg-muted/50 px-6 py-3 text-xs">Modified {formatDate(folder.lastModified)}</div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label>Permission</Label>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  id="view"
-                  value="view"
-                  checked={sharePermission === "view"}
-                  onChange={() => setSharePermission("view")}
-                  className="mr-1"
-                />
-                <Label htmlFor="view" className="text-sm">
-                  View only
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  id="edit"
-                  value="edit"
-                  checked={sharePermission === "edit"}
-                  onChange={() => setSharePermission("edit")}
-                  className="mr-1"
-                />
-                <Label htmlFor="edit" className="text-sm">
-                  Can edit
-                </Label>
-              </div>
+
+            {/* Files */}
+            <div>
+              <h2 className="text-lg font-semibold mb-4">Files</h2>
+              {viewMode === "grid" ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {sortedFiles.map((file) => (
+                    <Card key={file.id} className="overflow-hidden">
+                      <CardContent className="p-0">
+                        <div className="p-6">
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-start gap-4">
+                              {getFileIcon(file.type)}
+                              <div>
+                                <h3 className="font-medium">{file.name}</h3>
+                                <p className="text-sm text-muted-foreground">{file.size}</p>
+                              </div>
+                            </div>
+                            <div className="flex flex-col items-end gap-2">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon">
+                                    <MoreVertical className="h-4 w-4" />
+                                    <span className="sr-only">More</span>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                  <DropdownMenuItem>
+                                    <Eye className="mr-2 h-4 w-4" />
+                                    Open
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem>
+                                    <Download className="mr-2 h-4 w-4" />
+                                    Download
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem>
+                                    <Share2 className="mr-2 h-4 w-4" />
+                                    Share
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem>
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                              <div className="flex gap-1">
+                                {file.shared && (
+                                  <Badge variant="outline" className="h-5 text-xs">
+                                    <Share2 className="mr-1 h-3 w-3" />
+                                    Shared
+                                  </Badge>
+                                )}
+                                {file.encrypted && (
+                                  <Badge variant="outline" className="h-5 text-xs">
+                                    <Lock className="mr-1 h-3 w-3" />
+                                    Encrypted
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="bg-muted/50 px-6 py-3 text-xs">Modified {formatDate(file.lastModified)}</div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="border rounded-md overflow-hidden">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b bg-muted/50">
+                        <th className="text-left p-3 font-medium">Name</th>
+                        <th className="text-left p-3 font-medium">Type</th>
+                        <th className="text-left p-3 font-medium">Size</th>
+                        <th className="text-left p-3 font-medium">Modified</th>
+                        <th className="text-left p-3 font-medium">Status</th>
+                        <th className="text-right p-3 font-medium">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sortedFiles.map((file) => (
+                        <tr key={file.id} className="border-b">
+                          <td className="p-3">
+                            <div className="flex items-center gap-3">
+                              {getFileIcon(file.type)}
+                              <span className="font-medium">{file.name}</span>
+                            </div>
+                          </td>
+                          <td className="p-3 text-muted-foreground">{file.type}</td>
+                          <td className="p-3 text-muted-foreground">{file.size}</td>
+                          <td className="p-3 text-muted-foreground">{formatDate(file.lastModified)}</td>
+                          <td className="p-3">
+                            <div className="flex gap-1">
+                              {file.shared && (
+                                <Badge variant="outline" className="h-5 text-xs">
+                                  <Share2 className="mr-1 h-3 w-3" />
+                                  Shared
+                                </Badge>
+                              )}
+                              {file.encrypted && (
+                                <Badge variant="outline" className="h-5 text-xs">
+                                  <Lock className="mr-1 h-3 w-3" />
+                                  Encrypted
+                                </Badge>
+                              )}
+                            </div>
+                          </td>
+                          <td className="p-3 text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                  <MoreVertical className="h-4 w-4" />
+                                  <span className="sr-only">More</span>
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuItem>
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  Open
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                  <Download className="mr-2 h-4 w-4" />
+                                  Download
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                  <Share2 className="mr-2 h-4 w-4" />
+                                  Share
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem>
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowShareDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={shareFile}>Share</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </main>
+      </div>
     </div>
   )
 }

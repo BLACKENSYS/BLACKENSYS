@@ -5,6 +5,22 @@ import { Button } from "@/components/ui/button"
 import { MainNav } from "@/components/main-nav"
 import { SiteFooter } from "@/components/site-footer"
 
+export const metadata = {
+  title: "About BLACKENSYS Private Limited | Video & Cloud Storage Solutions",
+  description:
+    "Learn about BLACKENSYS Private Limited, founded by Chandar Sekhar Hembram and Saurav Barjo. We provide innovative video streaming and unlimited cloud storage solutions.",
+  keywords: [
+    "blackensys",
+    "blackensys private limited",
+    "blackensys limited",
+    "about blackensys",
+    "blackensys founders",
+  ],
+  alternates: {
+    canonical: "/about",
+  },
+}
+
 export default function AboutPage() {
   return (
     <div className="flex min-h-screen flex-col">
@@ -15,10 +31,10 @@ export default function AboutPage() {
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl">
-                  About <span className="gradient-text">BLACKENSYS</span>
+                  About <span className="gradient-text">BLACKENSYS Private Limited</span>
                 </h1>
                 <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
-                  Empowering creators and businesses with innovative video and cloud storage solutions.
+                  Empowering creators and businesses with innovative video and cloud storage solutions from BLACKENSYS.
                 </p>
               </div>
             </div>
@@ -29,12 +45,12 @@ export default function AboutPage() {
           <div className="container px-4 md:px-6">
             <div className="grid gap-10 lg:grid-cols-2 items-center">
               <div className="space-y-4">
-                <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">Our Story</h2>
+                <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">The BLACKENSYS Story</h2>
                 <p className="text-muted-foreground">
-                  BLACKENSYS was founded with a vision to revolutionize how people create, share, and store digital
-                  content. Our journey began in 2024 when our founders, Chandar Sekhar Hembram and Saurav Barjo,
-                  recognized the need for an integrated platform that combines video creation tools with unlimited cloud
-                  storage.
+                  BLACKENSYS Private Limited was founded with a vision to revolutionize how people create, share, and
+                  store digital content. Our journey began in 2024 when our founders, Chandar Sekhar Hembram and Saurav
+                  Barjo, recognized the need for an integrated platform that combines video creation tools with
+                  unlimited cloud storage.
                 </p>
                 <p className="text-muted-foreground">
                   Incorporated on February 20, 2024, and headquartered in Khorda, Odisha, India, BLACKENSYS has quickly
@@ -49,7 +65,7 @@ export default function AboutPage() {
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-background"></div>
                 <img
                   src="/placeholder.svg?height=400&width=600"
-                  alt="BLACKENSYS office"
+                  alt="BLACKENSYS Private Limited office"
                   className="object-cover w-full h-full"
                 />
               </div>
@@ -305,6 +321,45 @@ export default function AboutPage() {
             </div>
           </div>
         </section>
+
+        {/* Add structured data script for the about page */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "AboutPage",
+              mainEntity: {
+                "@type": "Organization",
+                name: "BLACKENSYS Private Limited",
+                alternateName: ["BLACKENSYS", "BLACKENSYS Limited"],
+                url: "https://blackensys.com",
+                logo: "https://blackensys.com/images/logo.png",
+                foundingDate: "2024-02-20",
+                founders: [
+                  {
+                    "@type": "Person",
+                    name: "Chandar Sekhar Hembram",
+                    jobTitle: "Co-founder & CEO",
+                  },
+                  {
+                    "@type": "Person",
+                    name: "Saurav Barjo",
+                    jobTitle: "Co-founder & CTO",
+                  },
+                ],
+                description:
+                  "BLACKENSYS Private Limited offers video streaming, content creation, and unlimited cloud storage solutions.",
+                address: {
+                  "@type": "PostalAddress",
+                  addressLocality: "Khorda",
+                  addressRegion: "Odisha",
+                  addressCountry: "IN",
+                },
+              },
+            }),
+          }}
+        />
       </main>
       <SiteFooter />
     </div>

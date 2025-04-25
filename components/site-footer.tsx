@@ -1,79 +1,129 @@
 import Link from "next/link"
-import { Cloud } from "lucide-react"
+import { Film, Mail, MapPin, Phone } from "lucide-react"
 
 export function SiteFooter() {
   return (
-    <footer className="border-t py-12 bg-background">
-      <div className="container mx-auto px-4 md:px-6">
-        <div className="grid grid-cols-2 gap-10 md:grid-cols-4 lg:grid-cols-5">
-          <div className="col-span-2 lg:col-span-2">
-            <Link href="/" className="flex items-center gap-2 font-bold text-xl mb-4">
-              <div className="relative w-8 h-8">
-                <Cloud className="h-8 w-8 text-primary absolute" />
-                <div className="absolute w-4 h-4 bg-background rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
-              </div>
-              <span className="gradient-text">BLACKENSYS</span>
-            </Link>
+    <footer className="w-full py-6 md:py-12 bg-background border-t">
+      <div className="container px-4 md:px-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 font-bold text-xl">
+              <Film className="h-6 w-6" />
+              <span>BLACKENSYS</span>
+            </div>
             <p className="text-sm text-muted-foreground">
-              Create, share, and store your videos with unlimited cloud storage. All in one platform.
+              Your all-in-one platform for content creation, sharing, and storage.
             </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              <span className="gradient-text font-medium">DARK AFTER LIGHT</span>
-            </p>
+            <div className="space-y-2">
+              <div className="flex items-start gap-2 text-sm">
+                <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                <span>123 Innovation Street, Tech City, 400001</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Phone className="h-4 w-4 text-muted-foreground" />
+                <span>+91 98765 43210</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Mail className="h-4 w-4 text-muted-foreground" />
+                <span>info@blackensys.com</span>
+              </div>
+            </div>
           </div>
-          <div className="flex flex-col gap-2">
-            <h3 className="font-semibold">Product</h3>
-            <Link href="/features" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              Features
-            </Link>
-            <Link href="/pricing" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              Pricing
-            </Link>
-            <Link href="/#testimonials" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              Testimonials
-            </Link>
-            <Link href="/#faq" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              FAQ
-            </Link>
+          <div className="space-y-4">
+            <h4 className="font-medium">Platform</h4>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link href="/features" className="text-muted-foreground hover:text-foreground">
+                  Features
+                </Link>
+              </li>
+              <li>
+                <Link href="/pricing" className="text-muted-foreground hover:text-foreground">
+                  Pricing
+                </Link>
+              </li>
+              <li>
+                <Link href="/reels" className="text-muted-foreground hover:text-foreground">
+                  Reels
+                </Link>
+              </li>
+              <li>
+                <Link href="/cloud-storage" className="text-muted-foreground hover:text-foreground">
+                  Cloud Storage
+                </Link>
+              </li>
+              <li>
+                <Link href="/business" className="text-muted-foreground hover:text-foreground">
+                  Business Tools
+                </Link>
+              </li>
+            </ul>
           </div>
-          <div className="flex flex-col gap-2">
-            <h3 className="font-semibold">Company</h3>
-            <Link href="/about" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              About
-            </Link>
-            <Link href="/blog" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              Blog
-            </Link>
-            <Link href="/careers" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              Careers
-            </Link>
-            <Link href="/contact" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              Contact
-            </Link>
+          <div className="space-y-4">
+            <h4 className="font-medium">Company</h4>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link href="/about" className="text-muted-foreground hover:text-foreground">
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link href="/blog" className="text-muted-foreground hover:text-foreground">
+                  Blog
+                </Link>
+              </li>
+              <li>
+                <Link href="/careers" className="text-muted-foreground hover:text-foreground">
+                  Careers
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="text-muted-foreground hover:text-foreground">
+                  Contact
+                </Link>
+              </li>
+              <li>
+                <Link href="/press" className="text-muted-foreground hover:text-foreground">
+                  Press
+                </Link>
+              </li>
+            </ul>
           </div>
-          <div className="flex flex-col gap-2">
-            <h3 className="font-semibold">Legal</h3>
-            <Link href="/terms" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              Terms of Service
-            </Link>
-            <Link href="/privacy" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              Privacy Policy
-            </Link>
-            <Link href="/cookie-policy" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              Cookie Policy
-            </Link>
-            <Link href="/gdpr" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              GDPR
-            </Link>
+          <div className="space-y-4">
+            <h4 className="font-medium">Legal</h4>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link href="/terms" className="text-muted-foreground hover:text-foreground">
+                  Terms of Service
+                </Link>
+              </li>
+              <li>
+                <Link href="/privacy" className="text-muted-foreground hover:text-foreground">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/cookies" className="text-muted-foreground hover:text-foreground">
+                  Cookie Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/security" className="text-muted-foreground hover:text-foreground">
+                  Security
+                </Link>
+              </li>
+              <li>
+                <Link href="/compliance" className="text-muted-foreground hover:text-foreground">
+                  Compliance
+                </Link>
+              </li>
+            </ul>
           </div>
         </div>
-        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t pt-6 md:flex-row">
-          <p className="text-sm text-muted-foreground">© 2025 BLACKENSYS. All rights reserved.</p>
-          <div className="flex gap-4">
-            <Link
-              href="https://www.facebook.com/blackensys"
-              className="text-muted-foreground hover:text-primary transition-colors"
-            >
+        <div className="mt-8 border-t pt-8 flex flex-col md:flex-row justify-between items-center">
+          <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} BLACKENSYS. All rights reserved.</p>
+          <div className="flex items-center gap-4 mt-4 md:mt-0">
+            <Link href="#" className="text-muted-foreground hover:text-foreground">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
@@ -90,10 +140,26 @@ export function SiteFooter() {
               </svg>
               <span className="sr-only">Facebook</span>
             </Link>
-            <Link
-              href="https://x.com/blackensys"
-              className="text-muted-foreground hover:text-primary transition-colors"
-            >
+            <Link href="#" className="text-muted-foreground hover:text-foreground">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-5 w-5"
+              >
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+              </svg>
+              <span className="sr-only">Instagram</span>
+            </Link>
+            <Link href="#" className="text-muted-foreground hover:text-foreground">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
@@ -110,32 +176,7 @@ export function SiteFooter() {
               </svg>
               <span className="sr-only">Twitter</span>
             </Link>
-            <Link
-              href="https://www.instagram.com/blackensys/"
-              className="text-muted-foreground hover:text-primary transition-colors"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-5 w-5"
-              >
-                <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
-                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line>
-              </svg>
-              <span className="sr-only">Instagram</span>
-            </Link>
-            <Link
-              href="https://linkedin.com/company/blackensys"
-              className="text-muted-foreground hover:text-primary transition-colors"
-            >
+            <Link href="#" className="text-muted-foreground hover:text-foreground">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
@@ -149,7 +190,7 @@ export function SiteFooter() {
                 className="h-5 w-5"
               >
                 <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
-                <rect width="4" height="12" x="2" y="9"></rect>
+                <rect x="2" y="9" width="4" height="12"></rect>
                 <circle cx="4" cy="4" r="2"></circle>
               </svg>
               <span className="sr-only">LinkedIn</span>
